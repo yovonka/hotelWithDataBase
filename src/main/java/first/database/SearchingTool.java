@@ -1,43 +1,47 @@
 package first.database;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
+import java.util.LinkedList;
 
 public class SearchingTool {
 	
-	private jdbcConnector jdbcConnector;
-
-	public SearchingTool(jdbcConnector jdbc) {
-		this.jdbcConnector = jdbc;
+	private jdbcConnector jdbcConnector = new jdbcConnector();
+	
+	public LinkedList<Room> executeSQLSelect(String myQuery){
+		
+		try {
+			jdbcConnector.setConnectionToDerby();
+		} catch (SQLException e) {
+			System.out.println("Connection error");
+		}
+			
+		LinkedList<Room> list = new LinkedList<Room>();
+		
+		try {
+			Statement myStatement = jdbcConnector.getConector().createStatement();
+			ResultSet rs = myStatement.executeQuery(myQuery);
+			while(rs.next()){ 
+				list.add(new Room(rs.getString(1),rs.getString(2),rs.getInt(3),rs.getInt(4),rs.getInt(5)));
+				
+			}
+			
+		} catch (SQLException e) {
+			
+			System.out.println("Search errror");
+		}  
+		
+		try {
+			jdbcConnector.closeTheConnection();
+		} catch (SQLException e) {
+			System.out.println("Close error");
+		}
+		return list;
 	}
 	
-	public void executeSQLSelectAll() throws SQLException{
-		jdbcConnector.setConnectionToDerby();
-			
-		Statement myStatement = jdbcConnector.getConector().createStatement();  
-		ResultSet rs = myStatement.executeQuery("select * from PionierskiHotel ");
+	public String createQuery(int size, int prize) {
 		
-		while(rs.next()){ // MyStatement sprawdzic.. !!
-			System.out.println(rs.getString(1) +" "+ rs.getString(2)+" "+ rs.getString(3)+" "+ rs.getString(4));
-		}
-		jdbcConnector.closeTheConnection();
-	}
-	
-	public void showAvailableRooms() throws SQLException{
-		jdbcConnector.setConnectionToDerby();
-			
-		Statement myStatement = jdbcConnector.getConector().createStatement();  
-		ResultSet rs = myStatement.executeQuery("select * from PionierskiHotel where available = 'T'");
-		
-		while(rs.next()){ // MyStatement sprawdzic.. !!
-			System.out.println(rs.getString(1) +" "+ rs.getString(2)+" "+ rs.getString(3)+" "+ rs.getString(4));
-		}
-		jdbcConnector.closeTheConnection();
+		return "select * from PionierskiHotel where available = 'T' and size = "+size+" and prize <= "+prize;	
 	}
 
-	// search the room (which is .. )
-	// show if size less/big than
-	// show if cost less than
 	
 }
